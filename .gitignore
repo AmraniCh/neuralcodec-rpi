@@ -218,3 +218,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Données audio (ne pas committer)
+data/samples/
+data/encoded/
+*.wav
+*.tar.gz
+*.flac
