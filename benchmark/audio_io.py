@@ -15,6 +15,11 @@ def load_audio(path, target_sr=16000):
     
     return audio_data, target_sr
 
+def save_audio(audio_data, save_path, sr=16000):
+    # write the audio data to a file
+    sf.write(save_path, audio_data, sr)
+
+
 
 
 
