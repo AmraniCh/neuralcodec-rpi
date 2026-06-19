@@ -1,6 +1,7 @@
 import soundfile as sf
 import librosa
 import numpy as np
+from pprint import pprint
 
 def load_audio(path, target_sr=16000):
     audio_data, original_sr = sf.read(path)
@@ -20,7 +21,17 @@ def save_audio(audio_data, save_path, sr=16000):
     sf.write(save_path, audio_data, sr)
 
 
-
+def get_audio_info(path):
+    info = sf.info(path)
+    
+    return {
+        'samplerate': info.samplerate,
+        'duration': info.duration,
+        'format': info.format,
+        'subtype': info.subtype,
+        'channels': info.channels
+    }
+    
 
 
 if __name__ == "__main__":
@@ -29,6 +40,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 0:
         sound_file = sys.argv[1]
 
-        print(load_audio(sound_file))
- 
+        # print(load_audio(sound_file))
+        pprint(get_audio_info(sound_file))
+
 
