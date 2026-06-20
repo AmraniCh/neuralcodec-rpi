@@ -25,12 +25,14 @@ def get_file_size(path):
 if __name__ == "__main__":
     import sys
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         original_path = sys.argv[1]
         decoded_path = sys.argv[2]
+        compressed_path = sys.argv[3]
         print("PESQ score:", calc_pesq(original_path, decoded_path))
         print("Bitrate (kbps) - Original: ", calc_bitrate(original_path))
         print("Bitrate (kbps) - Decoded: ", calc_bitrate(decoded_path))
+        print("Bitrate (kbps) - Compressed: ", calc_bitrate(compressed_path))
 
     elif len(sys.argv) == 2:
         sound_file = sys.argv[1]
