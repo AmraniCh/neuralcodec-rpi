@@ -29,7 +29,10 @@ if __name__ == "__main__":
         original_path = sys.argv[1]
         decoded_path = sys.argv[2]
         print("PESQ score:", calc_pesq(original_path, decoded_path))
+        print("Bitrate (kbps) - Original: ", calc_bitrate(original_path))
+        print("Bitrate (kbps) - Decoded: ", calc_bitrate(decoded_path))
 
     elif len(sys.argv) == 2:
         sound_file = sys.argv[1]
+        print("Filesize (bytes):", get_file_size(sound_file))
         print("Bitrate (kbps):", calc_bitrate(sound_file))
