@@ -1,5 +1,6 @@
 from acodecs.opus_codec import encode as opus_encode, decode as opus_decode
 from mesure import calc_bitrate, calc_pesq
+import matplotlib.pyplot as plt
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -11,9 +12,15 @@ BITRATES = {
 
 def start(codec_name):
     bitrates = BITRATES[codec_name]
+    plot_scale_x = []
+    plot_scale_y = []
     for bitrate in bitrates:
         res = benchmark_codec(codec_name, bitrate)
-        print(res)
+        plot_scale_x.append(res['real_bitrate'])
+        plot_scale_y.append(res['pesq'])
+    plot_data(plot_scale_x, plot_scale_y, 'Opus')
+    
+
 
 def benchmark_codec(codec_name, bitrate):
     compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.opus"
@@ -36,6 +43,13 @@ def benchmark_codec(codec_name, bitrate):
         'pesq': pesq_score
     }
 
+
+def plot_data(scale_x, scale_y, label):
+    plt.plot(scale_x, scale_y, label=label)
+    plt.xlabel('Bitrate (kbps)')
+    plt.ylabel('PESQ')
+    plt.legend()
+    plt.savefig(f"benchmark/results/benchmark_{label}_results.png")
 
 if __name__ == '__main__':
     import sys
