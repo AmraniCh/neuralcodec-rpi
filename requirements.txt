@@ -4,3 +4,4 @@ librosa
 pesq
 matplotlib
 pycodec2
+encodec
