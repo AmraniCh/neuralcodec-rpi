@@ -2,8 +2,7 @@ from acodecs.opus_codec import encode as opus_encode, decode as opus_decode
 from acodecs.codec2_codec import encode as codec2_encode, decode as codec2_decode
 from audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
-import matplotlib.pyplot as plt
-import os
+import matplotlib.pyplot as plt 
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -11,11 +10,15 @@ OUTPUT_DIR = "data/encoded"
 codecs = {
     "Opus": {
         "bitrates": [6, 16, 32, 64],
-        "extension": "opus"
+        "extension": "opus",
+        "encode": opus_encode,
+        "decode": opus_decode
     },
     "Codec2": {
         "bitrates": [1.2, 1.3, 1.6, 2.4, 3.2],
-        "extension": "c2"
+        "extension": "c2",
+        "encode": codec2_encode,
+        "decode": codec2_decode
     }
 }
 
@@ -29,7 +32,7 @@ def run():
         plot_scale_y = []
 
         for bitrate in bitrates:
-            res = benchmark_codec(codec, bitrate, extension)
+            res = benchmark_codec(codec, bitrate, props)
             plot_scale_x.append(res['real_bitrate'])
             plot_scale_y.append(res['pesq'])
 
@@ -46,19 +49,14 @@ def run():
     plot_comparison(all_results)
 
 
-def benchmark_codec(codec_name, bitrate, extension):
+def benchmark_codec(codec_name, bitrate, props):
+    extension, encoder, decoder = props['extension'], props['encode'], props['decode']
+
     compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.{extension}"
     decoded_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}_decoded.wav"
 
-    match codec_name.lower():
-        case "opus":
-            opus_encode(ORIGINAL_AUDIO, compressed_path, bitrate)
-            opus_decode(compressed_path, decoded_path)
-        case "codec2":
-            codec2_encode(ORIGINAL_AUDIO, compressed_path, bitrate)
-            codec2_decode(compressed_path, decoded_path, bitrate)
-        case _:
-            raise ValueError(f"Unknown codec: {codec_name}")
+    encoder(ORIGINAL_AUDIO, compressed_path, bitrate)
+    decoder(ORIGINAL_AUDIO, compressed_path)
 
     # used original audio to bypass some encoders does not produce
     # a playable format for computing the audio duration (like in the codec2 case)
