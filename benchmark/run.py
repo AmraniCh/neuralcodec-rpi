@@ -1,5 +1,6 @@
 from acodecs.opus_codec import encode as opus_encode, decode as opus_decode
 from acodecs.codec2_codec import encode as codec2_encode, decode as codec2_decode
+import acodecs.encodec_codec as encodec
 from audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
 import matplotlib.pyplot as plt 
@@ -20,6 +21,12 @@ codecs = {
         "extension": "c2",
         "encode": codec2_encode,
         "decode": codec2_decode
+    },
+    "EnCodec": {
+        "bitrates": [1.5, 3, 6, 12, 24],
+        "extension": "ecdc",
+        "encode": encodec.encode,
+        "decode": encodec.decode
     }
 }
 
@@ -27,7 +34,7 @@ codecs = {
 def run():
     all_results = {}
     for codec, props in codecs.items():
-        bitrates, extension = props['bitrates'], props['extension']
+        bitrates = props['bitrates']
 
         plot_scale_x = []
         plot_scale_y = []
@@ -61,7 +68,9 @@ def benchmark_codec(codec_name, bitrate, props):
     decoded_path = f"{encoding_path}/{codec_name}_{bitrate}_decoded.wav"
 
     encoder(ORIGINAL_AUDIO, compressed_path, bitrate)
-    decoder(compressed_path, decoded_path, bitrate) # passing bitrate to the decoder also, because some decoders like codec2 do not produce headers with the compressed output
+    # passing bitrate to the decoder also, because some decoders 
+    # like codec2 do not produce headers with the compressed output
+    decoder(compressed_path, decoded_path, bitrate)
 
     # used original audio to bypass some encoders does not produce
     # a playable format for computing the audio duration (like in the codec2 case)
