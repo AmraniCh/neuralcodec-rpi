@@ -2,3 +2,4 @@ numpy
 soundfile
 librosa
 pesq
+matplotlib
