@@ -16,6 +16,13 @@ sudo apt install -y opus-tools codec2 libcodec2-dev \
                     python3.12-dev build-essential
 ```
 
+### Install pip dependecies
+
+```bash
+pip install -r requirements-torch.txt
+pip install -r requirements.txt
+```
+
 ## Usage
 
 ### Run codec evaluation
