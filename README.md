@@ -23,9 +23,17 @@ pip install -r requirements-torch.txt
 pip install -r requirements.txt
 ```
 
+### Test dataset (LibriSpeech dev-clean, ~322 MB)
+
+```bash
+cd data/samples
+wget https://www.openslr.org/resources/12/dev-clean.tar.gz
+tar -xzf dev-clean.tar.gz
+```
+
 ## Usage
 
-### Run codec evaluation
+### Run benchmark
 
 ```bash
 python3 benchmark/run.py
@@ -35,7 +43,7 @@ Outputs in `benchmark/results/`:
 - `Opus.png`, `Codec2.png` — individual codec curves
 - `comparison.png` — overlaid comparison
 
-### Test individual codecs
+### Test codecs
 
 **Opus**
 ```bash
@@ -53,6 +61,16 @@ python3 benchmark/acodecs/codec2_codec.py input.flac output.c2 2.4
 
 # Decode
 python3 benchmark/acodecs/codec2_codec.py input.c2 output.wav 2.4
+```
+
+**EnCodec**
+```bash
+# Compress + decode in one step (output .wav)
+encodec -b 6 -f input.flac output.wav
+
+# Two steps
+encodec -b 6 -f input.flac compressed.ecdc
+encodec -f compressed.ecdc decoded.wav
 ```
 
 ### Manual measurements
@@ -78,6 +96,7 @@ neuralcodec-rpi/
 │   ├── acodecs/           # codec wrappers
 │   │   ├── opus_codec.py
 │   │   └── codec2_codec.py
+│   │   └── encodec_codec.py
 │   └── results/           # plots, CSV
 ├── pi/                    # Phase 2 — real-time deployment (planned)
 │   ├── transmitter.py     # mic → encode → UDP send
