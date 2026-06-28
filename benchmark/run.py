@@ -7,34 +7,49 @@ import os
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
-CODECS = ["opus", "codec2"]
-BITRATES = {
-    "opus": [6, 16, 32, 64],
-    "codec2": [1.2, 1.3, 1.6, 2.4, 3.2],
+
+codecs = {
+    "Opus": {
+        "bitrates": [6, 16, 32, 64],
+        "extension": "opus"
+    },
+    "Codec2": {
+        "bitrates": [1.2, 1.3, 1.6, 2.4, 3.2],
+        "extension": "c2"
+    }
 }
 
 
-def start(codec_name):
-    bitrates = BITRATES[codec_name]
-    plot_scale_x = []
-    plot_scale_y = []
-    for bitrate in bitrates:
-        res = benchmark_codec(codec_name, bitrate)
-        plot_scale_x.append(res['real_bitrate'])
-        plot_scale_y.append(res['pesq'])
-    plot_data(plot_scale_x, plot_scale_y, codec_name)
+def run():
+    for codec, props in codecs.items():
+        bitrates, extension = props['bitrates'], props['extension']
+
+        plot_scale_x = []
+        plot_scale_y = []
+
+        for bitrate in bitrates:
+            res = benchmark_codec(codec, bitrate, extension)
+            plot_scale_x.append(res['real_bitrate'])
+            plot_scale_y.append(res['pesq'])
+
+        print(plot_scale_x, plot_scale_y, codec)
+        plot_data(plot_scale_x, plot_scale_y, codec)
+
+        # plt.title("Codec Comparison")
+        # plt.grid(True)
+        # plt.savefig("benchmark/results/comparison.png")
+        # plt.show()
 
 
-def benchmark_codec(codec_name, bitrate):
-    compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.opus"
+def benchmark_codec(codec_name, bitrate, extension):
+    compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.{extension}"
     decoded_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}_decoded.wav"
 
-    match codec_name:
+    match codec_name.lower():
         case "opus":
             opus_encode(ORIGINAL_AUDIO, compressed_path, bitrate)
             opus_decode(compressed_path, decoded_path)
         case "codec2":
-            compressed_path = f"{OUTPUT_DIR}/codec2_{bitrate}.c2"
             codec2_encode(ORIGINAL_AUDIO, compressed_path, bitrate)
             codec2_decode(compressed_path, decoded_path, bitrate)
         case _:
@@ -55,15 +70,12 @@ def benchmark_codec(codec_name, bitrate):
     }
 
 def plot_data(scale_x, scale_y, label):
+    plt.clf()
     plt.plot(scale_x, scale_y, label=label)
     plt.xlabel('Bitrate (kbps)')
     plt.ylabel('PESQ')
     plt.legend()
-    plt.savefig(f"benchmark/results/benchmark_{label}_results.png")
+    plt.savefig(f"benchmark/results/{label}.png")
 
 if __name__ == '__main__':
-    import sys
-
-    if len(sys.argv) == 2:
-        codec = sys.argv[1]
-        start(codec)
+    run()
