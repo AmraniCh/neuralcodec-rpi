@@ -25,9 +25,6 @@ def start(codec_name):
     plot_data(plot_scale_x, plot_scale_y, codec_name)
 
 
-
-
-
 def benchmark_codec(codec_name, bitrate):
     compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.opus"
     decoded_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}_decoded.wav"
@@ -43,9 +40,11 @@ def benchmark_codec(codec_name, bitrate):
         case _:
             raise ValueError(f"Unknown codec: {codec_name}")
 
+    # used original audio to bypass some encoders does not produce
+    # a playable format for computing the audio duration (like in the codec2 case)
     duration = get_audio_info(ORIGINAL_AUDIO)['duration']
-    compressed_size = os.path.getsize(compressed_path) * 8
-    compression_bitrate = (compressed_size / duration) / 1000
+    compression_bitrate = calc_bitrate(compressed_path, duration)
+
     pesq_score = calc_pesq(ORIGINAL_AUDIO, decoded_path)
 
     return {

@@ -7,11 +7,12 @@ from pesq import pesq
 def get_file_size(path):
     return os.path.getsize(path)
 
-def calc_bitrate(path):
+def calc_bitrate(path, duration=None):
     # for a compressed audio we can use the formula 
     # bitrate = size (bits) / duration (seconds) / 1000
     size = get_file_size(path) * 8
-    duration = get_audio_info(path)['duration']
+    if duration is None:
+        duration = get_audio_info(path)['duration']
     return (size / duration) / 1000
 
 # TODO fs and wb are hardcoded
