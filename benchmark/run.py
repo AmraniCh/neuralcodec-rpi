@@ -21,6 +21,7 @@ codecs = {
 
 
 def run():
+    all_results = {}
     for codec, props in codecs.items():
         bitrates, extension = props['bitrates'], props['extension']
 
@@ -32,13 +33,17 @@ def run():
             plot_scale_x.append(res['real_bitrate'])
             plot_scale_y.append(res['pesq'])
 
-        print(plot_scale_x, plot_scale_y, codec)
-        plot_data(plot_scale_x, plot_scale_y, codec)
+        all_results[codec] = {
+            'x': plot_scale_x,
+            'y': plot_scale_y
+        }
 
-        # plt.title("Codec Comparison")
-        # plt.grid(True)
-        # plt.savefig("benchmark/results/comparison.png")
-        # plt.show()
+        # keep this for debugging to inspect the actual plot axes values
+        # print(plot_scale_x, plot_scale_y, codec)
+        
+        plot_data(plot_scale_x, plot_scale_y, codec)
+    
+    plot_comparison(all_results)
 
 
 def benchmark_codec(codec_name, bitrate, extension):
@@ -76,6 +81,19 @@ def plot_data(scale_x, scale_y, label):
     plt.ylabel('PESQ')
     plt.legend()
     plt.savefig(f"benchmark/results/{label}.png")
+
+def plot_comparison(all_resules):
+    plt.clf()
+
+    for codec, data in all_resules.items():
+        plt.plot(data['x'], data['y'], label=codec, marker="o")
+    
+    plt.xlabel('Bitrate (kbps)')
+    plt.ylabel('PESQ')
+    plt.title('Codec Comparison')
+    plt.legend()
+    plt.grid(True)
+    plt.savefig("benchmark/results/comparison.png")
 
 if __name__ == '__main__':
     run()
