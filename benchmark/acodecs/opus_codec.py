@@ -4,7 +4,7 @@ import subprocess
 def encode(source_path, output_path, bitrate=16):
     return subprocess.run(["opusenc", "--bitrate", str(bitrate), source_path, output_path])
 
-def decode(source_path, output_path):
+def decode(source_path, output_path, bitrate=None):
     return subprocess.run(["opusdec", source_path, output_path])
 
 
