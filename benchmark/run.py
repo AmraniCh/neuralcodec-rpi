@@ -10,7 +10,7 @@ OUTPUT_DIR = "data/encoded"
 
 codecs = {
     "Opus": {
-        "bitrates": [6, 12, 16, 32, 64],
+        "bitrates": [6, 8, 12, 16, 32, 64],
         "extension": "opus",
         "encode": opus_encode,
         "decode": opus_decode
