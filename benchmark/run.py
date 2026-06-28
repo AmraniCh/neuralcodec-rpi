@@ -3,6 +3,7 @@ from acodecs.codec2_codec import encode as codec2_encode, decode as codec2_decod
 from audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
 import matplotlib.pyplot as plt 
+import os
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -52,11 +53,15 @@ def run():
 def benchmark_codec(codec_name, bitrate, props):
     extension, encoder, decoder = props['extension'], props['encode'], props['decode']
 
-    compressed_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}.{extension}"
-    decoded_path = f"{OUTPUT_DIR}/{codec_name}_{bitrate}_decoded.wav"
+    encoding_path = f"{OUTPUT_DIR}/{codec_name}"
+    if not os.path.exists(encoding_path):
+       os.mkdir(encoding_path) 
+
+    compressed_path = f"{encoding_path}/{codec_name}_{bitrate}.{extension}"
+    decoded_path = f"{encoding_path}/{codec_name}_{bitrate}_decoded.wav"
 
     encoder(ORIGINAL_AUDIO, compressed_path, bitrate)
-    decoder(ORIGINAL_AUDIO, compressed_path)
+    decoder(compressed_path, decoded_path, bitrate) # passing bitrate to the decoder also, because some decoders like codec2 do not produce headers with the compressed output
 
     # used original audio to bypass some encoders does not produce
     # a playable format for computing the audio duration (like in the codec2 case)
@@ -76,6 +81,8 @@ def plot_data(scale_x, scale_y, label):
     plt.figure()
     plt.plot(scale_x, scale_y, label=label, marker="o")
     
+    plt.axhline(y=3.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
+
     for x, y in zip(scale_x, scale_y):
         plt.annotate(
             f"({x:.1f}, {y:.2f})",
@@ -96,6 +103,8 @@ def plot_comparison(all_resules):
     for codec, data in all_resules.items():
         plt.plot(data['x'], data['y'], label=codec, marker="o")
     
+    plt.axhline(y=3.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
+
     plt.xlabel('Bitrate (kbps)')
     plt.ylabel('PESQ')
     plt.title('Codec Comparison')
