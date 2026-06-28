@@ -3,3 +3,4 @@ soundfile
 librosa
 pesq
 matplotlib
+pycodec2
