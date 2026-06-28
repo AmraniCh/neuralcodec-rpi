@@ -75,8 +75,18 @@ def benchmark_codec(codec_name, bitrate, extension):
     }
 
 def plot_data(scale_x, scale_y, label):
-    plt.clf()
-    plt.plot(scale_x, scale_y, label=label)
+    plt.figure()
+    plt.plot(scale_x, scale_y, label=label, marker="o")
+    
+    for x, y in zip(scale_x, scale_y):
+        plt.annotate(
+            f"({x:.1f}, {y:.2f})",
+            (x, y),
+            textcoords="offset points",
+            xytext=(5, 5),
+            fontsize=8
+        )
+    
     plt.xlabel('Bitrate (kbps)')
     plt.ylabel('PESQ')
     plt.legend()
