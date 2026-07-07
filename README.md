@@ -173,8 +173,8 @@ neuralcodec-rpi/
 │   ├── run.py             # evaluation orchestrator
 │   ├── acodecs/           # codec wrappers
 │   │   ├── opus_codec.py
-│   │   └── codec2_codec.py
-│   │   └── encodec_codec.py
+│   │   ├── codec2_codec.py
+│   │   ├── encodec_codec.py
 │   │   └── soundstream_codec.py
 │   └── results/           # plots, CSV
 ├── pi/                    # Phase 2 — real-time deployment (planned)
