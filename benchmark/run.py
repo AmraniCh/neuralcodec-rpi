@@ -6,6 +6,8 @@ from audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
 import matplotlib.pyplot as plt
 import os
+import time
+from pprint import pprint
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -15,25 +17,29 @@ codecs = {
         "bitrates": [6, 8, 12, 16, 32, 64],
         "extension": "opus",
         "encode": opus_encode,
-        "decode": opus_decode
+        "decode": opus_decode,
+        "is_neural": False
     },
     "Codec2": {
         "bitrates": [1.2, 1.3, 1.6, 2.4, 3.2],
         "extension": "c2",
         "encode": codec2_encode,
-        "decode": codec2_decode
+        "decode": codec2_decode,
+        "is_neural": False
     },
     "EnCodec": {
         "bitrates": [1.5, 3, 6, 12, 24],
         "extension": "ecdc",
         "encode": encodec.encode,
-        "decode": encodec.decode
+        "decode": encodec.decode,
+        "is_neural": True
     },
     "SoundStream": {
         "bitrates": [3.2, 6, 9.2],
         "extension": "lyra",
         "encode": soundstream.encode,
-        "decode": soundstream.decode
+        "decode": soundstream.decode,
+        "is_neural": True
     }
 }
 
@@ -49,29 +55,71 @@ def run(only=None):
     else:
         selected = codecs
 
-    all_results = {}
+    quality_results = {}
+    hardware_results = {}
     for codec, props in selected.items():
         bitrates = props['bitrates']
 
         plot_scale_x = []
         plot_scale_y = []
 
+        hr_plot_scale_x = []
+        hr_plot_scale_y = []
+
         for bitrate in bitrates:
             res = benchmark_codec(codec, bitrate, props)
             plot_scale_x.append(res['real_bitrate'])
             plot_scale_y.append(res['pesq'])
+            hr_plot_scale_x.append(res['real_bitrate'])
+            hr_plot_scale_y.append(res['rtf'])
 
-        all_results[codec] = {
+        quality_results[codec] = {
             'x': plot_scale_x,
             'y': plot_scale_y
+        }
+
+        hardware_results[codec] = {
+            'x': hr_plot_scale_x,
+            'y': hr_plot_scale_y
         }
 
         # keep this for debugging to inspect the actual plot axes values
         # print(plot_scale_x, plot_scale_y, codec)
 
-        plot_data(plot_scale_x, plot_scale_y, codec)
+        plot_data(
+            scale_x=plot_scale_x, 
+            scale_y=plot_scale_y, 
+            label=codec, 
+            categ='quality', 
+            xlabel='Bitrate (kbps)', 
+            ylabel='PESQ',
+            acceptable_threshold=1 if props["is_neural"] else 2.5
+        )
 
-    plot_comparison(all_results)
+        plot_data(
+            scale_x=hr_plot_scale_x, 
+            scale_y=hr_plot_scale_y, 
+            label=codec, 
+            categ='hardware', 
+            xlabel='Bitrate (kbps)', 
+            ylabel='RTF',
+        )
+
+    plot_comparison(
+        data=quality_results, 
+        xlabel='Bitrate (kbps)', 
+        ylabel='PESQ',
+        categ='quality', 
+        title='Codec Comparison (Quality)'
+    )
+
+    plot_comparison(
+        data=hardware_results, 
+        xlabel='Bitrate (kbps)', 
+        ylabel='RTF',
+        categ='hardware', 
+        title='Codec Comparison (Hardware)'
+    )
 
 def benchmark_codec(codec_name, bitrate, props):
     extension, encoder, decoder = props['extension'], props['encode'], props['decode']
@@ -83,7 +131,10 @@ def benchmark_codec(codec_name, bitrate, props):
     compressed_path = f"{encoding_path}/{codec_name}_{bitrate}.{extension}"
     decoded_path = f"{encoding_path}/{codec_name}_{bitrate}_decoded.wav"
 
+    encdec_start_time = time.time()
+
     encoder(ORIGINAL_AUDIO, compressed_path, bitrate)
+    
     # passing bitrate to the decoder also, because some decoders
     # like codec2 do not produce headers with the compressed output
     decoder(compressed_path, decoded_path, bitrate)
@@ -91,23 +142,28 @@ def benchmark_codec(codec_name, bitrate, props):
     # used original audio to bypass some encoders does not produce
     # a playable format for computing the audio duration (like in the codec2 case)
     duration = get_audio_info(ORIGINAL_AUDIO)['duration']
-    compression_bitrate = calc_bitrate(compressed_path, duration)
 
+    encdec_time = time.time() - encdec_start_time
+    rtf = encdec_time / duration
+    compression_bitrate = calc_bitrate(compressed_path, duration)
     pesq_score = calc_pesq(ORIGINAL_AUDIO, decoded_path)
 
     return {
         'codec_name': codec_name,
         'target_bitrate': bitrate,
         'real_bitrate': compression_bitrate,
-        'pesq': pesq_score
+        'pesq': pesq_score,
+        'rtf': rtf
     }
 
 
-def plot_data(scale_x, scale_y, label):
+def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_threshold = None):
     plt.figure()
     plt.plot(scale_x, scale_y, label=label, marker="o")
 
-    plt.axhline(y=3.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
+    # if categ == "quality":
+    if acceptable_threshold:
+        plt.axhline(y=acceptable_threshold, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
 
     for x, y in zip(scale_x, scale_y):
         plt.annotate(
@@ -118,26 +174,28 @@ def plot_data(scale_x, scale_y, label):
             fontsize=8
         )
 
-    plt.xlabel('Bitrate (kbps)')
-    plt.ylabel('PESQ')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
     plt.legend()
-    plt.savefig(f"benchmark/results/{label}.png")
+    plt.savefig(f"benchmark/results/{categ}/{label}.png")
 
 
-def plot_comparison(all_resules):
+def plot_comparison(data, xlabel, ylabel, title, categ):
     plt.clf()
 
-    for codec, data in all_resules.items():
+    for codec, data in data.items():
         plt.plot(data['x'], data['y'], label=codec, marker="o")
+    
+    if categ == 'quality':
+        plt.axhline(y=2.5, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold (Traditional)')
+        plt.axhline(y=1.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold (Neural)')
 
-    plt.axhline(y=3.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
-
-    plt.xlabel('Bitrate (kbps)')
-    plt.ylabel('PESQ')
-    plt.title('Codec Comparison')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
     plt.legend()
     plt.grid(True)
-    plt.savefig("benchmark/results/comparison.png")
+    plt.savefig(f"benchmark/results/{categ}/comparison.png")
 
 
 if __name__ == '__main__':
