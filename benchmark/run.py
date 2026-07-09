@@ -1,7 +1,4 @@
-from acodecs.opus_codec import encode as opus_encode, decode as opus_decode
-from acodecs.codec2_codec import encode as codec2_encode, decode as codec2_decode
-from acodecs.encodec_codec import encode as encodec_encode, decode as encodec_decode
-from acodecs.soundstream_codec import encode as soundstream_encode, decode as soundstream_decode
+from neuralcodec.common.codec_registry import codecs
 from neuralcodec.common.audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
 import matplotlib.pyplot as plt
@@ -9,41 +6,8 @@ import os
 import time
 from pprint import pprint
 
-
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
-
-codecs = {
-    "Opus": {
-        "bitrates": [6, 8, 12, 16, 32, 64],
-        "extension": "opus",
-        "encode": opus_encode,
-        "decode": opus_decode,
-        "is_neural": False
-    },
-    "Codec2": {
-        "bitrates": [1.2, 1.3, 1.6, 2.4, 3.2],
-        "extension": "c2",
-        "encode": codec2_encode,
-        "decode": codec2_decode,
-        "is_neural": False
-    },
-    "EnCodec": {
-        "bitrates": [1.5, 3, 6, 12, 24],
-        "extension": "ecdc",
-        "encode": encodec_encode,
-        "decode": encodec_decode,
-        "is_neural": True
-    },
-    "SoundStream": {
-        "bitrates": [3.2, 6, 9.2],
-        "extension": "lyra",
-        "encode": soundstream_encode,
-        "decode": soundstream_decode,
-        "is_neural": True
-    }
-}
-
 
 def run(only=None):
     # optional filter: run only the codecs named on the command line
@@ -90,7 +54,7 @@ def run(only=None):
         plot_data(
             scale_x=plot_scale_x, 
             scale_y=plot_scale_y, 
-            label=codec, 
+            label=props['label'], 
             categ='quality', 
             xlabel='Bitrate (kbps)', 
             ylabel='PESQ',
@@ -100,7 +64,7 @@ def run(only=None):
         plot_data(
             scale_x=hr_plot_scale_x, 
             scale_y=hr_plot_scale_y, 
-            label=codec, 
+            label=props['label'], 
             categ='hardware', 
             xlabel='Bitrate (kbps)', 
             ylabel='RTF',
