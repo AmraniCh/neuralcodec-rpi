@@ -1,10 +1,14 @@
 import argparse
 import os
 import socket
-from neuralcodec.common.audio_io import load_audio
+from neuralcodec.common.audio_io import load_audio, save_audio
 import numpy as np
+from neuralcodec.common.acodecs import opus_codec, codec2_codec, encodec_codec, soundstream_codec
+import tempfile
+from neuralcodec.common.codec_registry import codecs
 
-CHUNK_SIZE = 960
+
+CHUNK_SIZE = 1400
 
 
 if __name__ == '__main__':
@@ -12,6 +16,8 @@ if __name__ == '__main__':
     parser.add_argument('file')
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', default=5005)
+    parser.add_argument('--codec', default='encodec', choices=['opus', 'codec2', 'encodec', 'soundstream'])
+    parser.add_argument('--bitrate', type=float, default=6.0)
 
     args = parser.parse_args()
 
@@ -19,22 +25,37 @@ if __name__ == '__main__':
         print(f"Audio file not found: {args.file}")
         exit(1)
 
+    file = args.file
     host = args.host
     port = args.port
-    file = args.file
+    codec = codecs[args.codec]
+    bitrate = args.bitrate
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.connect((host, port))
     
     audio, sr = load_audio(file)
 
-    # chunking
-    for i in range(0, len(audio), CHUNK_SIZE):
-        chunk = audio[i:i + CHUNK_SIZE]
-        print(f"send chunk: {len(chunk)}")
-        sock.send(chunk.astype(np.float32).tobytes())
+    tmp_wav = tempfile.mktemp(suffix='.wav')
+    tmp_compressed = tempfile.mktemp(suffix=f'.{codec['extension']}')
+
+    save_audio(audio, tmp_wav, sr)
+
+    encoder = codec['encode']
+    encoder(tmp_wav, tmp_compressed, bitrate)
+    
+    with open(tmp_compressed, 'rb') as f:
+        compressed_data = f.read()
+
+        # chunking
+        for i in range(0, len(compressed_data), CHUNK_SIZE):
+            chunk = compressed_data[i:i + CHUNK_SIZE]
+            print(f"send chunk: {len(chunk)}")
+            sock.send(chunk)
 
     sock.send(b"END")
+    
+    os.remove(tmp_compressed)
 
 
 
