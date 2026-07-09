@@ -103,11 +103,13 @@ tar -xzf dev-clean.tar.gz
 ### Transmit & Receive
 
 **Terminal 1 - Receiver:**
+
 ```bash
 python src/neuralcodec/receiver.py --codec encodec --bitrate 6
 ```
 
-**Terminal 2 — Transmitter:**
+**Terminal 2 - Transmitter:**
+
 ```bash
 python src/neuralcodec/transmitter.py data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac --codec encodec --bitrate 6
 ```
@@ -126,44 +128,19 @@ Outputs in `benchmark/results/`:
 - `Opus.png`, `Codec2.png` — individual codec curves
 - `comparison.png` — overlaid comparison
 
-### Test codecs
 
-**Opus**
+### Test codecs separately
+
 ```bash
 # Encode at 16 kbps
-python3 benchmark/acodecs/opus_codec.py input.flac output.opus 16
+python3 src/neuralcodec/common/acodecs/opus_codec.py input.flac output.opus 16
 
 # Decode
-python3 benchmark/acodecs/opus_codec.py input.opus output.wav
+python3 src/neuralcodec/common/acodecs/opus_codec.py input.opus output.wav
 ```
 
-**Codec2**
-```bash
-# Encode at 2.4 kbps
-python3 benchmark/acodecs/codec2_codec.py input.flac output.c2 2.4
+Other codecs follow the same pattern — see files in `src/neuralcodec/common/acodecs/`.
 
-# Decode
-python3 benchmark/acodecs/codec2_codec.py input.c2 output.wav 2.4
-```
-
-**EnCodec**
-```bash
-# Compress + decode in one step (output .wav)
-encodec -b 6 -f input.flac output.wav
-
-# Two steps
-encodec -b 6 -f input.flac compressed.ecdc
-encodec -f compressed.ecdc decoded.wav
-```
-
-**SoundStream (Lyra v2)**
-```bash
-# Encode at 3.2 kbps (supported: 3.2, 6, 9.2)
-python3 benchmark/acodecs/soundstream_codec.py input.flac output.lyra 3.2
-
-# Decode
-python3 benchmark/acodecs/soundstream_codec.py output.lyra decoded.wav
-```
 
 ### Manual measurements
 
