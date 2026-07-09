@@ -1,10 +1,10 @@
 import subprocess
 
 def encode(original_path, compressed_path, bitrate):
-    return subprocess.run(["encodec", "-b", str(bitrate), original_path, compressed_path])
+    return subprocess.run(["encodec", "-b", str(bitrate), "-f", original_path, compressed_path])
 
 def decode(compressed_path, decoded_path, bitrate=None):
-    return subprocess.run(["encodec", compressed_path, decoded_path])
+    return subprocess.run(["encodec", "-f", compressed_path, decoded_path])
 
 if __name__ == "__main__":
     import sys
