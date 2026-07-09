@@ -1,7 +1,7 @@
 import os
 from pprint import pprint
-from audio_io import get_audio_info
-from audio_io import load_audio
+from neuralcodec.common.audio_io import get_audio_info
+from neuralcodec.common.audio_io import load_audio
 from pesq import pesq
 
 def get_file_size(path):

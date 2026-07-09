@@ -1,13 +1,14 @@
 from acodecs.opus_codec import encode as opus_encode, decode as opus_decode
 from acodecs.codec2_codec import encode as codec2_encode, decode as codec2_decode
-import acodecs.encodec_codec as encodec
-import acodecs.soundstream_codec as soundstream
-from audio_io import get_audio_info
+from acodecs.encodec_codec import encode as encodec_encode, decode as encodec_decode
+from acodecs.soundstream_codec import encode as soundstream_encode, decode as soundstream_decode
+from neuralcodec.common.audio_io import get_audio_info
 from mesure import calc_bitrate, calc_pesq
 import matplotlib.pyplot as plt
 import os
 import time
 from pprint import pprint
+
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -30,15 +31,15 @@ codecs = {
     "EnCodec": {
         "bitrates": [1.5, 3, 6, 12, 24],
         "extension": "ecdc",
-        "encode": encodec.encode,
-        "decode": encodec.decode,
+        "encode": encodec_encode,
+        "decode": encodec_decode,
         "is_neural": True
     },
     "SoundStream": {
         "bitrates": [3.2, 6, 9.2],
         "extension": "lyra",
-        "encode": soundstream.encode,
-        "decode": soundstream.decode,
+        "encode": soundstream_encode,
+        "decode": soundstream_decode,
         "is_neural": True
     }
 }

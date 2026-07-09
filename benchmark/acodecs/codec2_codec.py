@@ -1,6 +1,6 @@
 import numpy as np
 import pycodec2
-from audio_io import load_audio, save_audio
+from neuralcodec.common.audio_io import load_audio, save_audio
 import librosa
 
 
