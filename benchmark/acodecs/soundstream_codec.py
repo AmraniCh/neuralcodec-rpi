@@ -65,12 +65,17 @@ def encode(source_path, output_path, bitrate=3.2):
 def decode(compressed_path, decoded_path, bitrate=None):
     """Decode a .lyra file back to wav."""
     with tempfile.TemporaryDirectory() as tmp_dir:
-        result = subprocess.run([
+        cmd = [
             DECODER,
             f"--encoded_path={compressed_path}",
             f"--output_dir={tmp_dir}",
             f"--model_path={MODEL_PATH}",
-        ])
+        ]
+        
+        if bitrate is not None:
+            cmd.append(f"--bitrate={int(float(bitrate) * 1000)}")
+        
+        result = subprocess.run(cmd)
 
         name = os.path.splitext(os.path.basename(compressed_path))[0]
         decoded = os.path.join(tmp_dir, name + "_decoded.wav")
