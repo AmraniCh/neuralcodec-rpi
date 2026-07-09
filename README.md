@@ -100,14 +100,14 @@ tar -xzf dev-clean.tar.gz
 
 ## Usage
 
-### Real-time UDP Pipeline
+### Transmit & Receive
 
-**Terminal 1 — Receiver**
+**Terminal 1 - Receiver:**
 ```bash
 python src/neuralcodec/receiver.py --codec encodec --bitrate 6
 ```
 
-**Terminal 2 — Transmitter**
+**Terminal 2 — Transmitter:**
 ```bash
 python src/neuralcodec/transmitter.py data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac --codec encodec --bitrate 6
 ```
