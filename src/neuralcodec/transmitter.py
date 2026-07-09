@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', default=5005)
     parser.add_argument('--codec', default='encodec', choices=['opus', 'codec2', 'encodec', 'soundstream'])
-    parser.add_argument('--bitrate', type=float, default=6.0)
+    parser.add_argument('--bitrate', type=float, default=6.0) # 6 kbps to change later, make it not optional
 
     args = parser.parse_args()
 

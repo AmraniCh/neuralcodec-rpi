@@ -5,3 +5,4 @@ pesq
 matplotlib
 pycodec2
 encodec
+sounddevice

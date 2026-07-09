@@ -3,20 +3,24 @@ import argparse
 from neuralcodec.common.codec_registry import codecs
 import tempfile
 import os
+import sounddevice as sd
+from neuralcodec.common.audio_io import load_audio
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Transmitter audio')
     parser.add_argument('--host', default='0.0.0.0')
     parser.add_argument('--port', default=5005)
     parser.add_argument('--codec', default='encodec', choices=['opus', 'codec2', 'encodec', 'soundstream'])
-    parser.add_argument('--bitrate', type=float, default=6.0)
+    parser.add_argument('--bitrate', type=float, default=6.0) # 6 kbps to change later, make it not optional
+    parser.add_argument('--play', action='store_true', help='Play audio on speaker')
 
     args = parser.parse_args()
 
-    host = args.host
-    port = args.port
-    codec = codecs[args.codec]
+    host    = args.host
+    port    = args.port
+    codec   = codecs[args.codec]
     bitrate = args.bitrate
+    play    = args.play
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind((host, port))
@@ -35,7 +39,16 @@ if __name__ == '__main__':
     with open(tmp_compressed, 'wb') as f:
         f.write(compressed_data)
     
-    audio_decoded = codec['decode'](tmp_compressed, 'data/received.wav', bitrate)
+    output_file = 'data/received.wav'
+
+    codec['decode'](tmp_compressed, output_file, bitrate)
+    
+    audio, sr = load_audio(output_file)
+
+    if play:
+        # this gives an error on WSL, we have to tested on raspberry pi with a speaker device
+        sd.play(audio, sr)
+        sd.wait()
     
     os.remove(tmp_compressed)
 
