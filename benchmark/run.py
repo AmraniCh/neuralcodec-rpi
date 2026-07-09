@@ -93,7 +93,7 @@ def run(only=None):
             categ='quality', 
             xlabel='Bitrate (kbps)', 
             ylabel='PESQ',
-            acceptable_threshold=1 if props["is_neural"] else 2.5
+            acceptable_threshold=2 if props["is_neural"] else 3
         )
 
         plot_data(
@@ -106,7 +106,7 @@ def run(only=None):
         )
 
     plot_comparison(
-        data=quality_results, 
+        data_dict=quality_results, 
         xlabel='Bitrate (kbps)', 
         ylabel='PESQ',
         categ='quality', 
@@ -114,7 +114,7 @@ def run(only=None):
     )
 
     plot_comparison(
-        data=hardware_results, 
+        data_dict=hardware_results, 
         xlabel='Bitrate (kbps)', 
         ylabel='RTF',
         categ='hardware', 
@@ -161,34 +161,52 @@ def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_thresho
     plt.figure()
     plt.plot(scale_x, scale_y, label=label, marker="o")
 
-    # if categ == "quality":
     if acceptable_threshold:
         plt.axhline(y=acceptable_threshold, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold')
+    
+    if categ == 'hardware':
+        plt.axhline(y=1.0, color='red', linestyle='--', alpha=0.5, label='Real-time threshold')
 
-    for x, y in zip(scale_x, scale_y):
-        plt.annotate(
-            f"({x:.1f}, {y:.2f})",
-            (x, y),
-            textcoords="offset points",
-            xytext=(5, 5),
-            fontsize=8
-        )
+    if categ == 'quality':
+        for x, y in zip(scale_x, scale_y):
+            plt.annotate(
+                f"({x:.1f}, {y:.2f})",
+                (x, y),
+                textcoords="offset points",
+                xytext=(5, 5),
+                fontsize=7
+            )
 
+    if categ == 'hardware':
+        min_rtf, max_rtf = min(scale_y), max(scale_y)
+        plt.text(0.95, 0.85, 
+            f'RTF range: {min_rtf:.2f} – {max_rtf:.2f}',
+            transform=plt.gca().transAxes,
+            ha='right', va='top',
+            fontsize=9, 
+            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5))
+        
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
     plt.savefig(f"benchmark/results/{categ}/{label}.png")
 
 
-def plot_comparison(data, xlabel, ylabel, title, categ):
+def plot_comparison(data_dict, xlabel, ylabel, title, categ):
     plt.clf()
 
-    for codec, data in data.items():
+    for codec, data in data_dict.items():
         plt.plot(data['x'], data['y'], label=codec, marker="o")
-    
+        
     if categ == 'quality':
-        plt.axhline(y=2.5, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold (Traditional)')
-        plt.axhline(y=1.0, color='red', linestyle='--', alpha=0.5, label='Acceptable threshold (Neural)')
+        plt.axhline(y=3.0, color='green', linestyle='--', alpha=0.5, 
+                    label='Acceptable Threshold (Traditional)')
+        plt.axhline(y=2.0, color='purple', linestyle=':', alpha=0.7, 
+                    label='Acceptable Threshold (Neural)')
+
+    
+    if categ == 'hardware':
+        plt.axhline(y=1.0, color='red', linestyle='--', alpha=0.5, label='Real-time threshold')
 
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
