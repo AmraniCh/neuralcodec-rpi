@@ -13,10 +13,10 @@
 
 ```bash
 sudo apt install -y opus-tools codec2 libcodec2-dev \
-                    python3.12-dev build-essential
+                    python3.12-dev build-essential libportaudio2
 ```
 
-### Install pip dependecies
+### Install pip dependencies
 
 ```bash
 pip install -r requirements-torch.txt
@@ -100,6 +100,20 @@ tar -xzf dev-clean.tar.gz
 
 ## Usage
 
+### Real-time UDP Pipeline
+
+**Terminal 1 — Receiver**
+```bash
+python src/neuralcodec/receiver.py --codec encodec --bitrate 6
+```
+
+**Terminal 2 — Transmitter**
+```bash
+python src/neuralcodec/transmitter.py data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac --codec encodec --bitrate 6
+```
+
+Output saved to `data/received.wav`. Add `--play` to play on speaker.
+
 ### Run benchmark
 
 ```bash
@@ -171,14 +185,16 @@ neuralcodec-rpi/
 │   ├── audio_io.py        # load / save / info
 │   ├── mesure.py          # bitrate, PESQ, compression ratio
 │   ├── run.py             # evaluation orchestrator
-│   ├── acodecs/           # codec wrappers
-│   │   ├── opus_codec.py
-│   │   ├── codec2_codec.py
-│   │   ├── encodec_codec.py
-│   │   └── soundstream_codec.py
 │   └── results/           # plots, CSV
-├── pi/                    # Phase 2 — real-time deployment (planned)
-│   ├── transmitter.py     # mic → encode → UDP send
+├── src/neuralcodec/
+│   ├── common/
+│   │   ├── audio_io.py    # shared audio utilities
+│   │   └── acodecs/       # codec wrappers
+│   │       ├── opus_codec.py
+│   │       ├── codec2_codec.py
+│   │       ├── encodec_codec.py
+│   │       └── soundstream_codec.py
+│   ├── transmitter.py     # encode → UDP send
 │   └── receiver.py        # UDP recv → decode → speaker
 └── data/
     ├── samples/           # LibriSpeech (gitignored)
