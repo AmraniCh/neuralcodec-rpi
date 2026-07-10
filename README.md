@@ -159,23 +159,23 @@ python3 benchmark/mesure.py compressed.opus
 ```
 neuralcodec-rpi/
 ├── benchmark/
-│   ├── audio_io.py        # load / save / info
-│   ├── mesure.py          # bitrate, PESQ, compression ratio
-│   ├── run.py             # evaluation orchestrator
-│   └── results/           # plots, CSV
+│   ├── audio_io.py
+│   ├── mesure.py
+│   ├── run.py
+│   └── results
 ├── src/neuralcodec/
 │   ├── common/
-│   │   ├── audio_io.py    # shared audio utilities
-│   │   └── acodecs/       # codec wrappers
+│   │   ├── audio_io.py
+│   │   └── acodecs/
 │   │       ├── opus_codec.py
 │   │       ├── codec2_codec.py
 │   │       ├── encodec_codec.py
 │   │       └── soundstream_codec.py
-│   ├── transmitter.py     # encode → UDP send
-│   └── receiver.py        # UDP recv → decode → speaker
+│   ├── transmitter.py
+│   └── receiver.py
 └── data/
-    ├── samples/           # LibriSpeech (gitignored)
-    └── encoded/           # codec outputs (gitignored)
+    ├── samples/   # LibriSpeech
+    └── encoded/   # codec outputs
 ```
 
 ---
