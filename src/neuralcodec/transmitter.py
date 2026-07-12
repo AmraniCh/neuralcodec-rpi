@@ -37,7 +37,7 @@ if __name__ == '__main__':
     audio, sr = load_audio(file)
 
     tmp_wav = tempfile.mktemp(suffix='.wav')
-    tmp_compressed = tempfile.mktemp(suffix=f'.{codec['extension']}')
+    tmp_compressed = tempfile.mktemp(suffix=f'.{codec["extension"]}')
 
     save_audio(audio, tmp_wav, sr)
 
