@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import os
 import time
 from pprint import pprint
+import pandas as pd
 
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
@@ -20,6 +21,7 @@ def run(only=None):
     else:
         selected = codecs
 
+    all_results_csv = []
     quality_results = {}
     hardware_results = {}
     for codec, props in selected.items():
@@ -33,6 +35,7 @@ def run(only=None):
 
         for bitrate in bitrates:
             res = benchmark_codec(codec, bitrate, props)
+            all_results_csv.append(res)
             plot_scale_x.append(res['real_bitrate'])
             plot_scale_y.append(res['pesq'])
             hr_plot_scale_x.append(res['real_bitrate'])
@@ -69,6 +72,10 @@ def run(only=None):
             xlabel='Bitrate (kbps)', 
             ylabel='RTF',
         )
+
+    df = pd.DataFrame(all_results_csv)
+    df.to_csv('benchmark/results/results.csv', index=False)
+    print(df.to_string(index=False))
 
     plot_comparison(
         data_dict=quality_results, 
