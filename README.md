@@ -135,7 +135,7 @@ python src/neuralcodec/live_receiver.py --codec soundstream --bitrate 3.2 --play
 **Pi A - Transmitter:**
 
 ```bash
-python src/neuralcodec/live_transmitter.py --host 192.168.10.2 --codec soundstream --bitrate 3.2
+python src/neuralcodec/live_transmitter.py --host 192.168.10.1 --codec soundstream --bitrate 3.2
 ```
 
 Supported codecs: `opus`, `codec2`, `encodec`, `soundstream`. Press `Ctrl+C` to stop.
