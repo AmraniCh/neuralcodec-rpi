@@ -7,23 +7,37 @@
 
 ---
 
-## Setup
+## Dev Setup
 
-### System dependencies
+### 1. System dependencies
 
 ```bash
 sudo apt install -y opus-tools codec2 libcodec2-dev \
                     python3.12-dev build-essential libportaudio2
 ```
 
-### Install pip dependencies
+### 2. Python virtual environment
+
+```bash
+cd /var/www/neuralcodec-rpi
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install package in editable mode
+
+```bash
+pip install -e .
+```
+
+### 4. Install pip dependencies
 
 ```bash
 pip install -r requirements-torch.txt
 pip install -r requirements.txt
 ```
 
-### SoundStream (Lyra v2) — full workflow
+### 5. SoundStream (Lyra v2) Installation
 
 SoundStream support uses Google's Lyra v2 codec (built on the SoundStream
 architecture, with pretrained weights, real-time on ARM). Lyra only builds
@@ -75,20 +89,9 @@ export LYRA_MODEL_PATH=$HOME/lyra/lyra/model_coeffs
 **5. Test**
 
 ```bash
-$LYRA_ENCODER --helpshort          # sanity check
+$LYRA_ENCODER --helpshort # sanity check
 python3 benchmark/run.py SoundStream
 ```
-
-Outputs `benchmark/results/SoundStream.png`. To include SoundStream in
-`comparison.png`, run all codecs together:
-
-```bash
-python3 benchmark/run.py                          # all codecs
-python3 benchmark/run.py Opus Codec2 SoundStream  # or a subset
-```
-
-(The comparison plot is rebuilt from scratch each run — only codecs in the
-current run appear on it.)
 
 ### Test dataset (LibriSpeech dev-clean, ~322 MB)
 
