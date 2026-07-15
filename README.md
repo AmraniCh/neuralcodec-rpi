@@ -93,7 +93,9 @@ $LYRA_ENCODER --helpshort # sanity check
 python3 benchmark/run.py SoundStream
 ```
 
-### Test dataset (LibriSpeech dev-clean, ~322 MB)
+### 6. Installing the audio dataset
+
+**(LibriSpeech dev-clean, ~322 MB)**
 
 ```bash
 cd data/samples
@@ -121,18 +123,19 @@ Output saved to `data/received.wav`. Add `--play` to play on speaker.
 
 ### Run benchmark
 
+before running the benchmark it recommanded to clear system caches before:
+
 ```bash
-python3 benchmark/run.py               # all codecs
-python3 benchmark/run.py SoundStream   # only one (case-insensitive)
-python3 benchmark/run.py Opus Codec2   # any subset
+sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
 ```
 
-Outputs in `benchmark/results/`:
-- `Opus.png`, `Codec2.png` — individual codec curves
-- `comparison.png` — overlaid comparison
+```bash
+python3 benchmark/run.py             # test all encoders
+python3 benchmark/run.py SoundStream # only SoundStream
+python3 benchmark/run.py Opus Codec2 # Opus and Codec2
+```
 
-
-### Test codecs separately
+### Test codecs separately example
 
 ```bash
 # Encode at 16 kbps
@@ -153,32 +156,6 @@ python3 benchmark/mesure.py original.flac decoded.wav
 
 # Real bitrate
 python3 benchmark/mesure.py compressed.opus
-```
-
----
-
-## Project Structure
-
-```
-neuralcodec-rpi/
-├── benchmark/
-│   ├── audio_io.py
-│   ├── mesure.py
-│   ├── run.py
-│   └── results
-├── src/neuralcodec/
-│   ├── common/
-│   │   ├── audio_io.py
-│   │   └── acodecs/
-│   │       ├── opus_codec.py
-│   │       ├── codec2_codec.py
-│   │       ├── encodec_codec.py
-│   │       └── soundstream_codec.py
-│   ├── transmitter.py
-│   └── receiver.py
-└── data/
-    ├── samples/   # LibriSpeech
-    └── encoded/   # codec outputs
 ```
 
 ---
