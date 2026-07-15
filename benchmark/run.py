@@ -23,32 +23,43 @@ def run(only=None):
 
     all_results_csv = []
     quality_results = {}
-    hardware_results = {}
+    rtf_encode_results = {}
+    rtf_decode_results = {}
     for codec, props in selected.items():
         bitrates = props['bitrates']
 
         plot_scale_x = []
         plot_scale_y = []
 
-        hr_plot_scale_x = []
-        hr_plot_scale_y = []
+        rtf_enc_plot_scale_x = []
+        rtf_enc_plot_scale_y = []
+
+        rtf_dec_plot_scale_x = []
+        rtf_dec_plot_scale_y = []
 
         for bitrate in bitrates:
             res = benchmark_codec(codec, bitrate, props)
             all_results_csv.append(res)
             plot_scale_x.append(res['real_bitrate'])
             plot_scale_y.append(res['pesq'])
-            hr_plot_scale_x.append(res['real_bitrate'])
-            hr_plot_scale_y.append(res['rtf'])
+            rtf_enc_plot_scale_x.append(res['real_bitrate'])
+            rtf_enc_plot_scale_y.append(res['rtf_encode'])
+            rtf_dec_plot_scale_x.append(res['real_bitrate'])
+            rtf_dec_plot_scale_y.append(res['rtf_decode'])
 
         quality_results[codec] = {
             'x': plot_scale_x,
             'y': plot_scale_y
         }
 
-        hardware_results[codec] = {
-            'x': hr_plot_scale_x,
-            'y': hr_plot_scale_y
+        rtf_encode_results[codec] = {
+            'x': rtf_enc_plot_scale_x,
+            'y': rtf_enc_plot_scale_y
+        }
+
+        rtf_decode_results[codec] = {
+            'x': rtf_dec_plot_scale_x,
+            'y': rtf_dec_plot_scale_y
         }
 
         # keep this for debugging to inspect the actual plot axes values
@@ -65,12 +76,21 @@ def run(only=None):
         )
 
         plot_data(
-            scale_x=hr_plot_scale_x, 
-            scale_y=hr_plot_scale_y, 
+            scale_x=rtf_enc_plot_scale_x, 
+            scale_y=rtf_enc_plot_scale_y, 
             label=props['label'], 
             categ='hardware', 
             xlabel='Bitrate (kbps)', 
-            ylabel='RTF',
+            ylabel='RTF Encode',
+        )
+
+        plot_data(
+            scale_x=rtf_dec_plot_scale_x, 
+            scale_y=rtf_dec_plot_scale_y, 
+            label=props['label'], 
+            categ='hardware', 
+            xlabel='Bitrate (kbps)', 
+            ylabel='RTF Decode',
         )
 
     df = pd.DataFrame(all_results_csv)
@@ -86,9 +106,17 @@ def run(only=None):
     )
 
     plot_comparison(
-        data_dict=hardware_results, 
+        data_dict=rtf_encode_results, 
         xlabel='Bitrate (kbps)', 
-        ylabel='RTF',
+        ylabel='RTF Encode',
+        categ='hardware', 
+        title='Codec Comparison (Hardware)'
+    )
+
+    plot_comparison(
+        data_dict=rtf_decode_results, 
+        xlabel='Bitrate (kbps)', 
+        ylabel='RTF Decode',
         categ='hardware', 
         title='Codec Comparison (Hardware)'
     )
@@ -103,20 +131,22 @@ def benchmark_codec(codec_name, bitrate, props):
     compressed_path = f"{encoding_path}/{codec_name}_{bitrate}.{extension}"
     decoded_path = f"{encoding_path}/{codec_name}_{bitrate}_decoded.wav"
 
-    encdec_start_time = time.time()
-
+    enc_start_time = time.time()
     encoder(ORIGINAL_AUDIO, compressed_path, bitrate)
+    enc_time = time.time() - enc_start_time
     
+    dec_start = time.time()
     # passing bitrate to the decoder also, because some decoders
     # like codec2 do not produce headers with the compressed output
     decoder(compressed_path, decoded_path, bitrate)
+    dec_time = time.time() - dec_start
 
     # used original audio to bypass some encoders does not produce
     # a playable format for computing the audio duration (like in the codec2 case)
     duration = get_audio_info(ORIGINAL_AUDIO)['duration']
 
-    encdec_time = time.time() - encdec_start_time
-    rtf = encdec_time / duration
+    encode_rtf = enc_time / duration
+    decode_rtf = dec_time / duration
     compression_bitrate = calc_bitrate(compressed_path, duration)
     pesq_score = calc_pesq(ORIGINAL_AUDIO, decoded_path)
 
@@ -125,7 +155,8 @@ def benchmark_codec(codec_name, bitrate, props):
         'target_bitrate': bitrate,
         'real_bitrate': compression_bitrate,
         'pesq': pesq_score,
-        'rtf': rtf
+        'rtf_encode': encode_rtf,
+        'rtf_decode': decode_rtf
     }
 
 
@@ -139,15 +170,15 @@ def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_thresho
     if categ == 'hardware':
         plt.axhline(y=1.0, color='red', linestyle='--', alpha=0.5, label='Real-time threshold')
 
-    if categ == 'quality':
-        for x, y in zip(scale_x, scale_y):
-            plt.annotate(
-                f"({x:.1f}, {y:.2f})",
-                (x, y),
-                textcoords="offset points",
-                xytext=(5, 5),
-                fontsize=7
-            )
+    # if categ == 'quality':
+    for x, y in zip(scale_x, scale_y):
+        plt.annotate(
+            f"({x:.1f}, {y:.2f})",
+            (x, y),
+            textcoords="offset points",
+            xytext=(5, 5),
+            fontsize=7
+        )
 
     if categ == 'hardware':
         min_rtf, max_rtf = min(scale_y), max(scale_y)
@@ -161,7 +192,8 @@ def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_thresho
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
-    plt.savefig(f"benchmark/results/{categ}/{label}.png")
+    plt.savefig(f"benchmark/results/{categ}/{label}_{ylabel.replace(' ', '_').lower()}.png")
+
 
 
 def plot_comparison(data_dict, xlabel, ylabel, title, categ):
@@ -185,7 +217,7 @@ def plot_comparison(data_dict, xlabel, ylabel, title, categ):
     plt.title(title)
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"benchmark/results/{categ}/comparison.png")
+    plt.savefig(f"benchmark/results/{categ}/comparison_{ylabel.replace(' ', '_').lower()}.png")
 
 
 if __name__ == '__main__':
