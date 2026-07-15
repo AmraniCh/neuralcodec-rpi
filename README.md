@@ -81,9 +81,10 @@ Ignore the thousands of `deprecated` warnings from NEON_2_SSE — only
 **5.4 Point the wrapper at the binaries** (append to `~/.bashrc`)
 
 ```bash
-export LYRA_ENCODER=$HOME/lyra/bazel-bin/lyra/cli_example/encoder_main
-export LYRA_DECODER=$HOME/lyra/bazel-bin/lyra/cli_example/decoder_main
-export LYRA_MODEL_PATH=$HOME/lyra/lyra/model_coeffs
+echo 'export LYRA_ENCODER=$HOME/lyra/bazel-bin/lyra/cli_example/encoder_main' >> ~/.bashrc
+echo 'export LYRA_DECODER=$HOME/lyra/bazel-bin/lyra/cli_example/decoder_main' >> ~/.bashrc
+echo 'export LYRA_MODEL_PATH=$HOME/lyra/lyra/model_coeffs' >> ~/.bashrc
+source ~/.bashrc
 ```
 
 **5.5 Test**
