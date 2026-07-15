@@ -121,6 +121,24 @@ python src/neuralcodec/transmitter.py data/samples/LibriSpeech/dev-clean/2902/90
 
 Output saved to `data/received.wav`. Add `--play` to play on speaker.
 
+### Live voice communication
+
+Real-time voice transmission between two Raspberry Pi boards using a USB microphone.
+
+**Pi B - Receiver (start first):**
+
+```bash
+python src/neuralcodec/live_receiver.py --codec soundstream --bitrate 3.2 --play
+```
+
+**Pi A - Transmitter:**
+
+```bash
+python src/neuralcodec/live_transmitter.py --host 192.168.10.2 --codec soundstream --bitrate 3.2
+```
+
+Supported codecs: `opus`, `codec2`, `encodec`, `soundstream`. Press `Ctrl+C` to stop.
+
 ### Run benchmark
 
 before running the benchmark it recommanded to clear system caches before:
