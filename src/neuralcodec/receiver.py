@@ -46,7 +46,6 @@ if __name__ == '__main__':
     audio, sr = load_audio(output_file)
 
     if play:
-        # this gives an error on WSL, we have to tested on raspberry pi with a speaker device
         sd.play(audio, sr)
         sd.wait()
     
