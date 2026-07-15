@@ -1,10 +1,9 @@
 import argparse
 import os
 import socket
-from neuralcodec.common.audio_io import load_audio, save_audio
-import numpy as np
-from neuralcodec.common.acodecs import opus_codec, codec2_codec, encodec_codec, soundstream_codec
 import tempfile
+
+from neuralcodec.common.audio_io import load_audio, save_audio
 from neuralcodec.common.codec_registry import codecs
 
 
