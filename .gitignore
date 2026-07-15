@@ -222,6 +222,3 @@ __marimo__/
 # Données audio (ne pas committer)
 data/samples/
 data/encoded/
-*.wav
-*.tar.gz
-*.flac
