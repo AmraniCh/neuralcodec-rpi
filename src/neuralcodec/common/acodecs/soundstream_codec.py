@@ -89,6 +89,6 @@ if __name__ == "__main__":
     import sys
 
     if len(sys.argv) == 4:
-        encode(sys.argv[1], sys.argv[2], sys.argv[3])
+        encode(sys.argv[1], sys.argv[2], float(sys.argv[3]))
     elif len(sys.argv) == 3:
         decode(sys.argv[1], sys.argv[2])
