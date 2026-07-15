@@ -44,7 +44,7 @@ architecture, with pretrained weights, real-time on ARM). Lyra only builds
 on Linux — use the Raspberry Pi or WSL (Ubuntu). Tested on Ubuntu 24.04 /
 GCC 13.
 
-**1. Install Bazel (via bazelisk) and build prerequisites**
+**5.1 Install Bazel (via bazelisk) and build prerequisites**
 
 ```bash
 sudo apt update
@@ -57,7 +57,7 @@ sudo chmod +x /usr/local/bin/bazel
 `python3-numpy` must be in the **system** python (deactivate any venv) —
 Lyra's TensorFlow toolchain probes it during workspace setup.
 
-**2. Clone and patch Lyra** (clone into `~`, not `/mnt/c`, for build speed)
+**5.2 Clone and patch Lyra** (clone into `~`, not `/mnt/c`, for build speed)
 
 ```bash
 cd ~ && git clone https://github.com/google/lyra.git && cd lyra
@@ -69,7 +69,7 @@ sed -i 's/branch = "master"/tag = "v0.5.0"/' WORKSPACE
 echo 'build --cxxopt=-includecstdint' >> .bazelrc
 ```
 
-**3. Build (~5–40 min first time)**
+**5.3 Build (~5–40 min first time)**
 
 ```bash
 bazel build -c opt lyra/cli_example:encoder_main lyra/cli_example:decoder_main
@@ -78,7 +78,7 @@ bazel build -c opt lyra/cli_example:encoder_main lyra/cli_example:decoder_main
 Ignore the thousands of `deprecated` warnings from NEON_2_SSE — only
 `ERROR:` lines matter.
 
-**4. Point the wrapper at the binaries** (append to `~/.bashrc`)
+**5.4 Point the wrapper at the binaries** (append to `~/.bashrc`)
 
 ```bash
 export LYRA_ENCODER=$HOME/lyra/bazel-bin/lyra/cli_example/encoder_main
@@ -86,7 +86,7 @@ export LYRA_DECODER=$HOME/lyra/bazel-bin/lyra/cli_example/decoder_main
 export LYRA_MODEL_PATH=$HOME/lyra/lyra/model_coeffs
 ```
 
-**5. Test**
+**5.5 Test**
 
 ```bash
 $LYRA_ENCODER --helpshort # sanity check
