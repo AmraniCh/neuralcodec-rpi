@@ -13,7 +13,7 @@
 
 ```bash
 sudo apt install -y opus-tools codec2 libcodec2-dev \
-                    python3.12-dev build-essential libportaudio2
+                    python3-dev build-essential libportaudio2
 ```
 
 ### 2. Python virtual environment
@@ -106,7 +106,7 @@ tar -xzf dev-clean.tar.gz
 
 ## Usage
 
-### Transmit & Receive
+### Transmit & Receive with audio file
 
 **Terminal 1 - Receiver:**
 
@@ -122,9 +122,9 @@ python src/neuralcodec/transmitter.py data/samples/LibriSpeech/dev-clean/2902/90
 
 Output saved to `data/received.wav`. Add `--play` to play on speaker.
 
-### Live voice communication
+### Live voice transmission
 
-Real-time voice transmission between two Raspberry Pi boards using a USB microphone.
+These are the commands for real time voice transmission between two Raspberry Pi boards (or you can use just PC for testing) :
 
 **Pi B - Receiver (start first):**
 
@@ -138,11 +138,13 @@ python src/neuralcodec/live_receiver.py --codec soundstream --bitrate 3.2 --play
 python src/neuralcodec/live_transmitter.py --host 192.168.10.1 --codec soundstream --bitrate 3.2
 ```
 
-Supported codecs: `opus`, `codec2`, `encodec`, `soundstream`. Press `Ctrl+C` to stop.
+> To test on a single machine you can use the loopback address `127.0.0.1` instead of the Pi IP.
+
+Supported codecs: `opus`, `codec2`, `encodec`, `soundstream`. 
 
 ### Run benchmark
 
-before running the benchmark it recommanded to clear system caches before:
+before running the benchmark it is recommanded to clear system caches :
 
 ```bash
 sudo sync; echo 3 | sudo tee /proc/sys/vm/drop_caches
