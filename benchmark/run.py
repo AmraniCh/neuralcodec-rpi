@@ -10,8 +10,11 @@ import pandas as pd
 ORIGINAL_AUDIO = "data/samples/LibriSpeech/dev-clean/2902/9008/2902-9008-0000.flac"
 OUTPUT_DIR = "data/encoded"
 
-def run(only=None):
-    # optional filter: run only the codecs named on the command line
+def run(machine, only=None):
+    results_dir = f"benchmark/results/{machine}"
+    os.makedirs(f"{results_dir}/quality", exist_ok=True)
+    os.makedirs(f"{results_dir}/hardware", exist_ok=True)
+
     if only:
         wanted = {name.lower() for name in only}
         selected = {k: v for k, v in codecs.items() if k.lower() in wanted}
@@ -66,6 +69,7 @@ def run(only=None):
         # print(plot_scale_x, plot_scale_y, codec)
 
         plot_data(
+            results_dir=results_dir,
             scale_x=plot_scale_x, 
             scale_y=plot_scale_y, 
             label=props['label'], 
@@ -76,6 +80,7 @@ def run(only=None):
         )
 
         plot_data(
+            results_dir=results_dir,
             scale_x=rtf_enc_plot_scale_x, 
             scale_y=rtf_enc_plot_scale_y, 
             label=props['label'], 
@@ -85,6 +90,7 @@ def run(only=None):
         )
 
         plot_data(
+            results_dir=results_dir,
             scale_x=rtf_dec_plot_scale_x, 
             scale_y=rtf_dec_plot_scale_y, 
             label=props['label'], 
@@ -94,10 +100,11 @@ def run(only=None):
         )
 
     df = pd.DataFrame(all_results_csv)
-    df.to_csv('benchmark/results/results.csv', index=False)
+    df.to_csv(f'{results_dir}/results.csv', index=False)
     print(df.to_string(index=False))
 
     plot_comparison(
+        results_dir=results_dir,
         data_dict=quality_results, 
         xlabel='Bitrate (kbps)', 
         ylabel='PESQ',
@@ -106,6 +113,7 @@ def run(only=None):
     )
 
     plot_comparison(
+        results_dir=results_dir,
         data_dict=rtf_encode_results, 
         xlabel='Bitrate (kbps)', 
         ylabel='RTF Encode',
@@ -114,6 +122,7 @@ def run(only=None):
     )
 
     plot_comparison(
+        results_dir=results_dir,
         data_dict=rtf_decode_results, 
         xlabel='Bitrate (kbps)', 
         ylabel='RTF Decode',
@@ -160,7 +169,7 @@ def benchmark_codec(codec_name, bitrate, props):
     }
 
 
-def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_threshold = None):
+def plot_data(results_dir, scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_threshold = None):
     plt.figure()
     plt.plot(scale_x, scale_y, label=label, marker="o")
 
@@ -192,11 +201,10 @@ def plot_data(scale_x, scale_y, label, categ, xlabel, ylabel, acceptable_thresho
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.legend()
-    plt.savefig(f"benchmark/results/{categ}/{label}_{ylabel.replace(' ', '_').lower()}.png")
+    plt.savefig(f"{results_dir}/{categ}/{label}_{ylabel.replace(' ', '_').lower()}.png")
 
 
-
-def plot_comparison(data_dict, xlabel, ylabel, title, categ):
+def plot_comparison(results_dir, data_dict, xlabel, ylabel, title, categ):
     plt.clf()
 
     for codec, data in data_dict.items():
@@ -217,9 +225,13 @@ def plot_comparison(data_dict, xlabel, ylabel, title, categ):
     plt.title(title)
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"benchmark/results/{categ}/comparison_{ylabel.replace(' ', '_').lower()}.png")
+    plt.savefig(f"{results_dir}/{categ}/comparison_{ylabel.replace(' ', '_').lower()}.png")
 
 
 if __name__ == '__main__':
     import sys
-    run(sys.argv[1:] or None)
+    import platform
+
+    machine = 'pc' if platform.machine() == 'x86_64' else 'pi' 
+
+    run(machine, sys.argv[1:] or None)
