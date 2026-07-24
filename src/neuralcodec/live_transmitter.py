@@ -11,14 +11,14 @@ from neuralcodec.common.codec_registry import codecs
 
 CHUNK_DURATION = 1
 MIC_SAMPLE_RATE = 44100
-LYRA_SAMPLE_RATE = 16000
+CODEC_SAMPLE_RATE = 16000
 MIC_DEVICE = 1
 UDP_CHUNK_SIZE = 1400
 TMP_DIR = "/dev/shm"
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Live transmitter (no threads)')
+    parser = argparse.ArgumentParser(description='Live transmitter')
     parser.add_argument('--host', required=True)
     parser.add_argument('--port', type=int, default=5005)
     parser.add_argument('--codec', default='soundstream', choices=list(codecs.keys()))
@@ -51,21 +51,22 @@ def main():
             )
             sd.wait()
 
-            audio_16k = librosa.resample(audio.flatten(), orig_sr=MIC_SAMPLE_RATE, target_sr=LYRA_SAMPLE_RATE)
+            audio_16k = librosa.resample(audio.flatten(), orig_sr=MIC_SAMPLE_RATE, target_sr=CODEC_SAMPLE_RATE)
 
             t0 = time.time()
-            sf.write(wav_path, audio_16k, LYRA_SAMPLE_RATE, subtype="PCM_16")
+            sf.write(wav_path, audio_16k, CODEC_SAMPLE_RATE, subtype="PCM_16")
             codec_info["encode"](wav_path, compressed_path, args.bitrate)
 
             with open(compressed_path, "rb") as f:
                 compressed = f.read()
 
+            # Send chunk data, then an END marker tagged with the chunk number
             for i in range(0, len(compressed), UDP_CHUNK_SIZE):
                 sock.send(compressed[i:i + UDP_CHUNK_SIZE])
-            sock.send(b"CHUNK_END")
+            sock.send(b"END")
 
             elapsed = time.time() - t0
-            print(f"[Chunk {chunk_num}] {len(compressed)} bytes, encode+send {elapsed:.3f}s (RTF {elapsed/CHUNK_DURATION:.3f})")
+            print(f"[Chunk {chunk_num}] {len(compressed)} bytes, encode+send {elapsed:.3f}s")
 
             if os.path.exists(wav_path):
                 os.remove(wav_path)
