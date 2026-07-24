@@ -2,7 +2,6 @@ import argparse
 import os
 import select
 import socket
-
 import numpy as np
 import soundfile as sf
 
@@ -19,8 +18,6 @@ TMP_DIR = "/dev/shm"
 
 
 def get_latest_chunk(sock):
-    """Block for the first packet, then drain the socket and return only
-    the newest complete chunk, discarding any older backlog."""
     latest = None
     chunks = []
     while True:
@@ -39,7 +36,7 @@ def get_latest_chunk(sock):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Live receiver')
+    parser = argparse.ArgumentParser(description='Receiver')
     parser.add_argument('--output', default='data/received.wav')
     parser.add_argument('--port', type=int, default=5005)
     parser.add_argument('--codec', default='soundstream', choices=list(codecs.keys()))

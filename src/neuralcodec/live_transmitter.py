@@ -2,7 +2,6 @@ import argparse
 import os
 import socket
 import time
-
 import librosa
 import sounddevice as sd
 import soundfile as sf
@@ -16,9 +15,8 @@ MIC_DEVICE = 1
 UDP_CHUNK_SIZE = 1400
 TMP_DIR = "/dev/shm"
 
-
 def main():
-    parser = argparse.ArgumentParser(description='Live transmitter')
+    parser = argparse.ArgumentParser(description='Transmitter')
     parser.add_argument('--host', required=True)
     parser.add_argument('--port', type=int, default=5005)
     parser.add_argument('--codec', default='soundstream', choices=list(codecs.keys()))
@@ -60,13 +58,12 @@ def main():
             with open(compressed_path, "rb") as f:
                 compressed = f.read()
 
-            # Send chunk data, then an END marker tagged with the chunk number
             for i in range(0, len(compressed), UDP_CHUNK_SIZE):
                 sock.send(compressed[i:i + UDP_CHUNK_SIZE])
             sock.send(b"END")
 
             elapsed = time.time() - t0
-            print(f"[Chunk {chunk_num}] {len(compressed)} bytes, encode+send {elapsed:.3f}s")
+            print(f"[Chunk {chunk_num}] {len(compressed)} bytes, encode+send duration: {elapsed:.3f}s")
 
             if os.path.exists(wav_path):
                 os.remove(wav_path)
